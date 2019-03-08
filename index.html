@@ -40,7 +40,7 @@
             <div class="card-header">Monthly Income</div>
             <div class="card-body">
               <form class="form-inline">
-                <div class="input-group col-6">
+                <div class="input-group col-sm-6 mb-2">
                   <div class="input-group-prepend">
                     <span class="input-group-text">$</span>
                   </div>
@@ -52,7 +52,7 @@
                   />
                 </div>
                 <button
-                  class="btn btn-success col-6"
+                  class="btn btn-success col-sm-6 mb-2"
                   type="submit"
                   id="income-btn"
                 >
@@ -97,14 +97,26 @@
                   </div>
                 </div>
                 <button
-                  class="btn btn-block btn-success"
+                  class="btn btn-block btn-success mb-2"
                   id="fixed-btn"
                   type="submit"
                 >
                   Submit
                 </button>
+                <button class="btn btn-warning fixed-edit-btn" type="submit">
+                  Edit
+                </button>
+                <button class="btn btn-danger fixed-delete-btn" type="submit">
+                  Delete
+                </button>
+                <button class="back-btn btn grey float-right fixed-back-btn">
+                  <i class="fa fa-chevron-circle-left"></i> Back
+                </button>
               </form>
-              <ul id="fixed-spending" class="list-group list-group-flush"></ul>
+              <ul
+                id="fixed-spending"
+                class="list-group list-group-flush fixed-spending"
+              ></ul>
             </div>
             <div class="card-footer">
               <p class="">
@@ -146,16 +158,28 @@
                   </div>
                 </div>
                 <button
-                  class="btn btn-block btn-success"
+                  class="btn btn-block btn-success mb-2"
                   id="variable-btn"
                   type="submit"
                 >
                   Submit
                 </button>
+                <button class="btn btn-warning variable-edit-btn" type="submit">
+                  Edit
+                </button>
+                <button
+                  class="btn btn-danger variable-delete-btn"
+                  type="submit"
+                >
+                  Delete
+                </button>
+                <button class="btn grey float-right variable-back-btn">
+                  <i class="fa fa-chevron-circle-left"></i> Back
+                </button>
               </form>
               <ul
                 id="variable-spending"
-                class="list-group list-group-flush"
+                class="list-group list-group-flush variable-spending"
               ></ul>
             </div>
             <div class="card-footer">

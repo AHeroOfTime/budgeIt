@@ -120,6 +120,38 @@ const ItemCtrl = (function() {
 
       return total;
     },
+    getFixedItemById: function(id) {
+      let found = null;
+      // Loop through items
+      fixedData.items.forEach(function(item) {
+        if (item.id === id) {
+          found = item;
+        }
+      });
+      return found;
+    },
+    setCurrentFixedItem: function(item) {
+      fixedData.currentItem = item;
+    },
+    getVariableItemById: function(id) {
+      let found = null;
+      // Loop through items
+      variableData.items.forEach(function(item) {
+        if (item.id === id) {
+          found = item;
+        }
+      });
+      return found;
+    },
+    setCurrentVariableItem: function(item) {
+      variableData.currentItem = item;
+    },
+    getCurrentFixedItem: function() {
+      return fixedData.currentItem;
+    },
+    getCurrentVariableItem: function() {
+      return variableData.currentItem;
+    },
     getIncome: function() {
       return incomeData.income;
     },
@@ -139,6 +171,12 @@ const UICtrl = (function() {
     variableList: '#variable-spending',
     fixedBtn: '#fixed-btn',
     variableBtn: '#variable-btn',
+    fixedEditBtn: '.fixed-edit-btn',
+    fixedDeleteBtn: '.fixed-delete-btn',
+    fixedBackBtn: '.fixed-back-btn',
+    variableEditBtn: '.variable-edit-btn',
+    variableDeleteBtn: '.variable-delete-btn',
+    variableBackBtn: '.variable-back-btn',
     fixedTitleInput: '#fixed-title',
     fixedAmountInput: '#fixed-amount',
     variableTitleInput: '#variable-title',
@@ -161,7 +199,7 @@ const UICtrl = (function() {
         <li class="list-group-item d-flex" id="item-${item.id}">
           <strong>${item.title} :</strong> &nbsp <em>${item.amount}</em>
           <a href="#" class="ml-auto">
-            <i class="edit-item fas fa-edit"></i>
+            <i class="fixed-edit-item fas fa-edit"></i>
           </a>
         </li>`;
       });
@@ -177,7 +215,7 @@ const UICtrl = (function() {
         <li class="list-group-item d-flex" id="item-${item.id}">
           <strong>${item.title} :</strong> &nbsp <em>${item.amount}</em>
           <a href="#" class="ml-auto">
-            <i class="edit-item fas fa-edit"></i>
+            <i class="variable-edit-item fas fa-edit"></i>
           </a>
         </li>`;
       });
@@ -203,7 +241,7 @@ const UICtrl = (function() {
         item.amount
       }</em>
       <a href="#" class="ml-auto">
-        <i class="edit-item fas fa-edit"></i>
+        <i class="fixed-edit-item fas fa-edit"></i>
       </a>`;
       // Insert item
       document
@@ -228,7 +266,7 @@ const UICtrl = (function() {
         item.amount
       }</em>
       <a href="#" class="ml-auto">
-        <i class="edit-item fas fa-edit"></i>
+        <i class="variable-edit-item fas fa-edit"></i>
       </a>`;
       // Insert item
       document
@@ -258,6 +296,54 @@ const UICtrl = (function() {
     showCombinedTotal: function(total) {
       document.querySelector(UISelectors.combinedTotal).textContent = total;
     },
+    addFixedItemToForm: function() {
+      document.querySelector(
+        UISelectors.fixedTitleInput,
+      ).value = ItemCtrl.getCurrentFixedItem().title;
+      document.querySelector(
+        UISelectors.fixedAmountInput,
+      ).value = ItemCtrl.getCurrentFixedItem().amount;
+      UICtrl.showEditState();
+    },
+    addVariableItemToForm: function() {
+      document.querySelector(
+        UISelectors.variableTitleInput,
+      ).value = ItemCtrl.getCurrentVariableItem().title;
+      document.querySelector(
+        UISelectors.variableAmountInput,
+      ).value = ItemCtrl.getCurrentVariableItem().amount;
+      UICtrl.showEditState();
+    },
+    clearEditState: function() {
+      UICtrl.clearIncomeInput();
+      UICtrl.clearVariableInput();
+
+      document.querySelector(UISelectors.fixedEditBtn).style.display = 'none';
+      document.querySelector(UISelectors.fixedDeleteBtn).style.display = 'none';
+      document.querySelector(UISelectors.fixedBackBtn).style.display = 'none';
+      document.querySelector(UISelectors.variableEditBtn).style.display =
+        'none';
+      document.querySelector(UISelectors.variableDeleteBtn).style.display =
+        'none';
+      document.querySelector(UISelectors.variableBackBtn).style.display =
+        'none';
+      document.querySelector(UISelectors.fixedBtn).style.display = 'block';
+      document.querySelector(UISelectors.variableBtn).style.display = 'block';
+    },
+    showEditState: function() {
+      document.querySelector(UISelectors.fixedEditBtn).style.display = 'inline';
+      document.querySelector(UISelectors.fixedDeleteBtn).style.display =
+        'inline';
+      document.querySelector(UISelectors.fixedBackBtn).style.display = 'inline';
+      document.querySelector(UISelectors.variableEditBtn).style.display =
+        'inline';
+      document.querySelector(UISelectors.variableDeleteBtn).style.display =
+        'inline';
+      document.querySelector(UISelectors.variableBackBtn).style.display =
+        'inline';
+      document.querySelector(UISelectors.fixedBtn).style.display = 'none';
+      document.querySelector(UISelectors.variableBtn).style.display = 'none';
+    },
     getSelectors: function() {
       return UISelectors;
     },
@@ -284,6 +370,15 @@ const App = (function(ItemCtrl, UICtrl) {
     document
       .querySelector(UISelectors.incomeBtn)
       .addEventListener('click', incomeSubmit);
+
+    // Edit icon click event - fixed
+    document
+      .querySelector(UISelectors.fixedList)
+      .addEventListener('click', fixedItemUpdateSubmit);
+    // for variable
+    document
+      .querySelector(UISelectors.variableList)
+      .addEventListener('click', variableItemUpdateSubmit);
   };
 
   // Add fixed spending submit
@@ -318,7 +413,6 @@ const App = (function(ItemCtrl, UICtrl) {
   const variableSpendingSubmit = function(e) {
     // Get form input from UI Controller
     const input = UICtrl.getVariableInput();
-    console.log(input);
 
     // Check if input fields are empty
     if (input.title !== '' && input.amount !== '') {
@@ -364,9 +458,62 @@ const App = (function(ItemCtrl, UICtrl) {
     e.preventDefault();
   };
 
+  // Update item submit - fixed
+  const fixedItemUpdateSubmit = function(e) {
+    if (e.target.classList.contains('fixed-edit-item')) {
+      // Get list item id
+      const listId = e.target.parentNode.parentNode.id;
+
+      // Break into an arr
+      const listIdArr = listId.split('-');
+
+      // Grab id
+      const id = parseInt(listIdArr[1]);
+
+      // Get item
+      const fixedItemToEdit = ItemCtrl.getFixedItemById(id);
+
+      // Set current item
+      ItemCtrl.setCurrentFixedItem(fixedItemToEdit);
+
+      // Add itme to form
+      UICtrl.addFixedItemToForm();
+    }
+
+    e.preventDefault();
+  };
+
+  // Variable
+  const variableItemUpdateSubmit = function(e) {
+    if (e.target.classList.contains('variable-edit-item')) {
+      // Get list item id
+      const listId = e.target.parentNode.parentNode.id;
+
+      // Break into an arr
+      const listIdArr = listId.split('-');
+
+      // Grab id
+      const id = parseInt(listIdArr[1]);
+
+      // Get item
+      const variableItemToEdit = ItemCtrl.getVariableItemById(id);
+
+      // Set current item
+      ItemCtrl.setCurrentVariableItem(variableItemToEdit);
+
+      // Add itme to form
+      UICtrl.addVariableItemToForm();
+
+      e.preventDefault();
+    }
+  };
+
   // Public Methods
   return {
     init: function() {
+      // Clear edit state / set initial state
+      UICtrl.clearEditState();
+
       // Fetch items from data structure
       const fixedItems = ItemCtrl.getFixedItems();
       const variableItems = ItemCtrl.getVariableItems();
