@@ -155,6 +155,34 @@ const ItemCtrl = (function() {
     getIncome: function() {
       return incomeData.income;
     },
+    updateFixedItem: function(title, amount) {
+      amount = parseFloat(amount);
+
+      let found = null;
+
+      fixedData.items.forEach(function(item) {
+        if (item.id === fixedData.currentItem.id) {
+          item.title = title;
+          item.amount = amount;
+          found = item;
+        }
+      });
+      return found;
+    },
+    updateVariableItem: function(title, amount) {
+      amount = parseFloat(amount);
+
+      let found = null;
+
+      variableData.items.forEach(function(item) {
+        if (item.id === variableData.currentItem.id) {
+          item.title = title;
+          item.amount = amount;
+          found = item;
+        }
+      });
+      return found;
+    },
     logFixedData: function() {
       return fixedData;
     },
@@ -168,7 +196,9 @@ const ItemCtrl = (function() {
 const UICtrl = (function() {
   const UISelectors = {
     fixedList: '#fixed-spending',
+    fixedItems: '#fixed-spending li',
     variableList: '#variable-spending',
+    variableItems: '#variable-spending li',
     fixedBtn: '#fixed-btn',
     variableBtn: '#variable-btn',
     fixedEditBtn: '.fixed-edit-btn',
@@ -303,7 +333,7 @@ const UICtrl = (function() {
       document.querySelector(
         UISelectors.fixedAmountInput,
       ).value = ItemCtrl.getCurrentFixedItem().amount;
-      UICtrl.showEditState();
+      UICtrl.showFixedEditState();
     },
     addVariableItemToForm: function() {
       document.querySelector(
@@ -312,36 +342,86 @@ const UICtrl = (function() {
       document.querySelector(
         UISelectors.variableAmountInput,
       ).value = ItemCtrl.getCurrentVariableItem().amount;
-      UICtrl.showEditState();
+      UICtrl.showVariableEditState();
     },
-    clearEditState: function() {
+    updateFixedUI: function(item) {
+      let listItems = document.querySelectorAll(UISelectors.fixedItems);
+
+      // Convert to array
+      listItems = Array.from(listItems);
+
+      listItems.forEach(function(listItem) {
+        const itemId = listItem.getAttribute('id');
+
+        if (itemId === `item-${item.id}`) {
+          document.querySelector(`#${itemId}`).innerHTML = `<strong>${
+            item.title
+          } :</strong> &nbsp <em>${item.amount}</em>
+          <a href="#" class="ml-auto">
+            <i class="fixed-edit-item fas fa-edit"></i>
+          </a>`;
+        }
+      });
+    },
+    // todo: Debug edit/update for variable
+    updateVariableUI: function(item) {
+      let variableListItems = document.querySelectorAll(
+        UISelectors.variableItems,
+      );
+
+      // Convert to array
+      variableListItems = Array.from(variableListItems);
+      console.log(variableListItems);
+
+      variableListItems.forEach(function(variableListItem) {
+        const itemId = variableListItem.getAttribute('id');
+        console.log(itemId);
+
+        if (itemId === `item-${item.id}`) {
+          let y = (document.querySelector(`#${itemId}`).innerHTML = `<strong>${
+            item.title
+          } :</strong> &nbsp <em>${item.amount}</em>
+          <a href="#" class="ml-auto">
+            <i class="variable-edit-item fas fa-edit"></i>
+          </a>`);
+        }
+      });
+    },
+    clearFixedEditState: function() {
       UICtrl.clearIncomeInput();
-      UICtrl.clearVariableInput();
+      UICtrl.clearFixedInput();
 
       document.querySelector(UISelectors.fixedEditBtn).style.display = 'none';
       document.querySelector(UISelectors.fixedDeleteBtn).style.display = 'none';
       document.querySelector(UISelectors.fixedBackBtn).style.display = 'none';
+      document.querySelector(UISelectors.fixedBtn).style.display = 'block';
+    },
+    clearVariableEditState: function() {
+      UICtrl.clearIncomeInput();
+      UICtrl.clearVariableInput();
+
       document.querySelector(UISelectors.variableEditBtn).style.display =
         'none';
       document.querySelector(UISelectors.variableDeleteBtn).style.display =
         'none';
       document.querySelector(UISelectors.variableBackBtn).style.display =
         'none';
-      document.querySelector(UISelectors.fixedBtn).style.display = 'block';
       document.querySelector(UISelectors.variableBtn).style.display = 'block';
     },
-    showEditState: function() {
+    showFixedEditState: function() {
       document.querySelector(UISelectors.fixedEditBtn).style.display = 'inline';
       document.querySelector(UISelectors.fixedDeleteBtn).style.display =
         'inline';
       document.querySelector(UISelectors.fixedBackBtn).style.display = 'inline';
+      document.querySelector(UISelectors.fixedBtn).style.display = 'none';
+    },
+    showVariableEditState: function() {
       document.querySelector(UISelectors.variableEditBtn).style.display =
         'inline';
       document.querySelector(UISelectors.variableDeleteBtn).style.display =
         'inline';
       document.querySelector(UISelectors.variableBackBtn).style.display =
         'inline';
-      document.querySelector(UISelectors.fixedBtn).style.display = 'none';
       document.querySelector(UISelectors.variableBtn).style.display = 'none';
     },
     getSelectors: function() {
@@ -371,13 +451,30 @@ const App = (function(ItemCtrl, UICtrl) {
       .querySelector(UISelectors.incomeBtn)
       .addEventListener('click', incomeSubmit);
 
+    // Disable submit on enter
+    document.addEventListener('keypress', function(e) {
+      if (e.keyCode === 13 || e.which === 13) {
+        e.preventDefault();
+        return false;
+      }
+    });
+
     // Edit icon click event - fixed
     document
       .querySelector(UISelectors.fixedList)
-      .addEventListener('click', fixedItemUpdateSubmit);
+      .addEventListener('click', fixedItemEditClick);
     // for variable
     document
       .querySelector(UISelectors.variableList)
+      .addEventListener('click', variableItemEditClick);
+
+    // Update item event - fixed
+    document
+      .querySelector(UISelectors.fixedEditBtn)
+      .addEventListener('click', fixedItemUpdateSubmit);
+    // Variable
+    document
+      .querySelector(UISelectors.variableEditBtn)
       .addEventListener('click', variableItemUpdateSubmit);
   };
 
@@ -458,8 +555,8 @@ const App = (function(ItemCtrl, UICtrl) {
     e.preventDefault();
   };
 
-  // Update item submit - fixed
-  const fixedItemUpdateSubmit = function(e) {
+  // Edit item click - fixed
+  const fixedItemEditClick = function(e) {
     if (e.target.classList.contains('fixed-edit-item')) {
       // Get list item id
       const listId = e.target.parentNode.parentNode.id;
@@ -484,7 +581,7 @@ const App = (function(ItemCtrl, UICtrl) {
   };
 
   // Variable
-  const variableItemUpdateSubmit = function(e) {
+  const variableItemEditClick = function(e) {
     if (e.target.classList.contains('variable-edit-item')) {
       // Get list item id
       const listId = e.target.parentNode.parentNode.id;
@@ -508,11 +605,60 @@ const App = (function(ItemCtrl, UICtrl) {
     }
   };
 
+  // Update item submit - fixed
+  const fixedItemUpdateSubmit = function(e) {
+    // Get item input
+    const input = UICtrl.getFixedInput();
+
+    // Update item
+    const updatedItem = ItemCtrl.updateFixedItem(input.title, input.amount);
+
+    // Update UI
+    UICtrl.updateFixedUI(updatedItem);
+
+    // Get fixed total
+    const fixedTotal = ItemCtrl.getFixedTotal();
+    const combinedTotal = ItemCtrl.getCombinedTotal();
+    // Add total to UI
+    UICtrl.showFixedTotal(fixedTotal);
+    // Add total to combined total
+    UICtrl.showCombinedTotal(combinedTotal);
+
+    UICtrl.clearFixedEditState();
+
+    e.preventDefault();
+  };
+
+  // Variable
+  const variableItemUpdateSubmit = function(e) {
+    // Get item input
+    const input = UICtrl.getVariableInput();
+
+    // Update item
+    const updatedItem = ItemCtrl.updateVariableItem(input.title, input.amount);
+
+    // Update UI
+    UICtrl.updateVariableUI(updatedItem);
+
+    // Get variable total
+    const variableTotal = ItemCtrl.getVariableTotal();
+    const combinedTotal = ItemCtrl.getCombinedTotal();
+    // Add total to UI
+    UICtrl.showVariableTotal(variableTotal);
+    // Add total to combined total
+    UICtrl.showCombinedTotal(combinedTotal);
+
+    UICtrl.clearVariableEditState();
+
+    e.preventDefault();
+  };
+
   // Public Methods
   return {
     init: function() {
       // Clear edit state / set initial state
-      UICtrl.clearEditState();
+      UICtrl.clearFixedEditState();
+      UICtrl.clearVariableEditState();
 
       // Fetch items from data structure
       const fixedItems = ItemCtrl.getFixedItems();
