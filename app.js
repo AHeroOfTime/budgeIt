@@ -365,25 +365,22 @@ const UICtrl = (function() {
     },
     // todo: Debug edit/update for variable
     updateVariableUI: function(item) {
-      let variableListItems = document.querySelectorAll(
-        UISelectors.variableItems,
-      );
+      let listItems = document.querySelectorAll(UISelectors.variableItems);
 
       // Convert to array
-      variableListItems = Array.from(variableListItems);
-      console.log(variableListItems);
+      listItems = Array.from(listItems);
 
-      variableListItems.forEach(function(variableListItem) {
-        const itemId = variableListItem.getAttribute('id');
+      listItems.forEach(function(listItem) {
+        const itemId = listItem.getAttribute('id');
         console.log(itemId);
 
         if (itemId === `item-${item.id}`) {
-          let y = (document.querySelector(`#${itemId}`).innerHTML = `<strong>${
+          document.querySelector(`#item-${item.id}`).innerHTML = `<strong>${
             item.title
           } :</strong> &nbsp <em>${item.amount}</em>
           <a href="#" class="ml-auto">
             <i class="variable-edit-item fas fa-edit"></i>
-          </a>`);
+          </a>`;
         }
       });
     },
