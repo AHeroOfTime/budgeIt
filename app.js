@@ -226,7 +226,7 @@ const UICtrl = (function() {
 
       items.forEach(function(item) {
         html += `
-        <li class="list-group-item d-flex" id="item-${item.id}">
+        <li class="list-group-item d-flex" id="fixed-item-${item.id}">
           <strong>${item.title} :</strong> &nbsp <em>${item.amount}</em>
           <a href="#" class="ml-auto">
             <i class="fixed-edit-item fas fa-edit"></i>
@@ -242,7 +242,7 @@ const UICtrl = (function() {
 
       items.forEach(function(item) {
         html += `
-        <li class="list-group-item d-flex" id="item-${item.id}">
+        <li class="list-group-item d-flex" id="variable-item-${item.id}">
           <strong>${item.title} :</strong> &nbsp <em>${item.amount}</em>
           <a href="#" class="ml-auto">
             <i class="variable-edit-item fas fa-edit"></i>
@@ -265,7 +265,7 @@ const UICtrl = (function() {
       // Add class
       li.className = 'list-group-item d-flex';
       // Add id
-      li.id = `item-${item.id}`;
+      li.id = `fixed-item-${item.id}`;
       // Add HTML
       li.innerHTML = `<strong>${item.title} :</strong> &nbsp <em>${
         item.amount
@@ -290,7 +290,7 @@ const UICtrl = (function() {
       // Add class
       li.className = 'list-group-item d-flex';
       // Add id
-      li.id = `item-${item.id}`;
+      li.id = `variable-item-${item.id}`;
       // Add HTML
       li.innerHTML = `<strong>${item.title} :</strong> &nbsp <em>${
         item.amount
@@ -353,7 +353,7 @@ const UICtrl = (function() {
       listItems.forEach(function(listItem) {
         const itemId = listItem.getAttribute('id');
 
-        if (itemId === `item-${item.id}`) {
+        if (itemId === `fixed-item-${item.id}`) {
           document.querySelector(`#${itemId}`).innerHTML = `<strong>${
             item.title
           } :</strong> &nbsp <em>${item.amount}</em>
@@ -372,10 +372,9 @@ const UICtrl = (function() {
 
       listItems.forEach(function(listItem) {
         const itemId = listItem.getAttribute('id');
-        console.log(itemId);
 
-        if (itemId === `item-${item.id}`) {
-          document.querySelector(`#item-${item.id}`).innerHTML = `<strong>${
+        if (itemId === `variable-item-${item.id}`) {
+          document.querySelector(`#${itemId}`).innerHTML = `<strong>${
             item.title
           } :</strong> &nbsp <em>${item.amount}</em>
           <a href="#" class="ml-auto">
@@ -562,7 +561,7 @@ const App = (function(ItemCtrl, UICtrl) {
       const listIdArr = listId.split('-');
 
       // Grab id
-      const id = parseInt(listIdArr[1]);
+      const id = parseInt(listIdArr[2]);
 
       // Get item
       const fixedItemToEdit = ItemCtrl.getFixedItemById(id);
@@ -587,7 +586,7 @@ const App = (function(ItemCtrl, UICtrl) {
       const listIdArr = listId.split('-');
 
       // Grab id
-      const id = parseInt(listIdArr[1]);
+      const id = parseInt(listIdArr[2]);
 
       // Get item
       const variableItemToEdit = ItemCtrl.getVariableItemById(id);
