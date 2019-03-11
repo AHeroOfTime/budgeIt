@@ -469,6 +469,7 @@ const UICtrl = (function() {
       });
 
       document.querySelector(UISelectors.incomeTotal).textContent = 0;
+      UICtrl.clearIncomeInput();
     },
     getSelectors: function() {
       return UISelectors;
@@ -536,16 +537,15 @@ const App = (function(ItemCtrl, UICtrl) {
     document
       .querySelector(UISelectors.fixedBackBtn)
       .addEventListener('click', UICtrl.clearFixedEditState);
-    // Variable
+    // Back button event - variable
+    document
+      .querySelector(UISelectors.variableBackBtn)
+      .addEventListener('click', UICtrl.clearVariableEditState);
+
+    // Reset form event
     document
       .querySelector(UISelectors.resetBtn)
       .addEventListener('click', resetForm);
-
-    // Reset form event
-    // Delete item event - fixed
-    document
-      .querySelector(UISelectors.fixedDeleteBtn)
-      .addEventListener('click', fixedDeleteSubmit);
   };
 
   // Add fixed spending submit
