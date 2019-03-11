@@ -183,6 +183,34 @@ const ItemCtrl = (function() {
       });
       return found;
     },
+    deleteFixedItem: function(id) {
+      // Get ids
+      const ids = fixedData.items.map(function(item) {
+        return item.id;
+      });
+
+      // Get index
+      const index = ids.indexOf(id);
+
+      // Remove item
+      fixedData.items.splice(index, 1);
+    },
+    deleteVariableItem: function(id) {
+      // Get ids
+      const ids = variableData.items.map(function(item) {
+        return item.id;
+      });
+
+      // Get index
+      const index = ids.indexOf(id);
+
+      // Remove item
+      variableData.items.splice(index, 1);
+    },
+    clearAllItems: function() {
+      fixedData.items = [];
+      variableData.items = [];
+    },
     logFixedData: function() {
       return fixedData;
     },
@@ -217,6 +245,7 @@ const UICtrl = (function() {
     incomeBtn: '#income-btn',
     incomeInput: '#income',
     incomeTotal: '.monthly-income',
+    resetBtn: '.reset-btn',
   };
 
   // Public Methods
@@ -363,7 +392,6 @@ const UICtrl = (function() {
         }
       });
     },
-    // todo: Debug edit/update for variable
     updateVariableUI: function(item) {
       let listItems = document.querySelectorAll(UISelectors.variableItems);
 
@@ -382,6 +410,16 @@ const UICtrl = (function() {
           </a>`;
         }
       });
+    },
+    deleteFixedUI: function(id) {
+      const itemId = `#fixed-item-${id}`;
+      const item = document.querySelector(itemId);
+      item.remove();
+    },
+    deleteVariableUI: function(id) {
+      const itemId = `#variable-item-${id}`;
+      const item = document.querySelector(itemId);
+      item.remove();
     },
     clearFixedEditState: function() {
       UICtrl.clearIncomeInput();
@@ -419,6 +457,18 @@ const UICtrl = (function() {
       document.querySelector(UISelectors.variableBackBtn).style.display =
         'inline';
       document.querySelector(UISelectors.variableBtn).style.display = 'none';
+    },
+    resetUI: function() {
+      let listItems = document.querySelectorAll('li.list-group-item');
+
+      // Turn into an array
+      listItems = [...listItems];
+
+      listItems.forEach(function(item) {
+        item.remove();
+      });
+
+      document.querySelector(UISelectors.incomeTotal).textContent = 0;
     },
     getSelectors: function() {
       return UISelectors;
@@ -472,6 +522,30 @@ const App = (function(ItemCtrl, UICtrl) {
     document
       .querySelector(UISelectors.variableEditBtn)
       .addEventListener('click', variableItemUpdateSubmit);
+
+    // Delete item event - fixed
+    document
+      .querySelector(UISelectors.fixedDeleteBtn)
+      .addEventListener('click', fixedDeleteSubmit);
+    // Delete item event - Variable
+    document
+      .querySelector(UISelectors.variableDeleteBtn)
+      .addEventListener('click', variableDeleteSubmit);
+
+    // Back button event - fixed
+    document
+      .querySelector(UISelectors.fixedBackBtn)
+      .addEventListener('click', UICtrl.clearFixedEditState);
+    // Variable
+    document
+      .querySelector(UISelectors.resetBtn)
+      .addEventListener('click', resetForm);
+
+    // Reset form event
+    // Delete item event - fixed
+    document
+      .querySelector(UISelectors.fixedDeleteBtn)
+      .addEventListener('click', fixedDeleteSubmit);
   };
 
   // Add fixed spending submit
@@ -647,6 +721,80 @@ const App = (function(ItemCtrl, UICtrl) {
     UICtrl.clearVariableEditState();
 
     e.preventDefault();
+  };
+
+  // Delete button event - fixed
+  const fixedDeleteSubmit = function(e) {
+    // Get current item
+    const currentItem = ItemCtrl.getCurrentFixedItem();
+
+    // Delete from data structure
+    ItemCtrl.deleteFixedItem(currentItem.id);
+
+    // Delete from UI
+    UICtrl.deleteFixedUI(currentItem.id);
+
+    // Get fixed total
+    const fixedTotal = ItemCtrl.getFixedTotal();
+    const combinedTotal = ItemCtrl.getCombinedTotal();
+    // Add total to UI
+    UICtrl.showFixedTotal(fixedTotal);
+    // Add total to combined total
+    UICtrl.showCombinedTotal(combinedTotal);
+
+    UICtrl.clearFixedEditState();
+
+    e.preventDefault();
+  };
+
+  // Delete button event - variable
+  const variableDeleteSubmit = function(e) {
+    // Get current item
+    const currentItem = ItemCtrl.getCurrentVariableItem();
+
+    // Delete from data structure
+    ItemCtrl.deleteVariableItem(currentItem.id);
+
+    // Delete from UI
+    UICtrl.deleteVariableUI(currentItem.id);
+
+    // Get variable total
+    const variableTotal = ItemCtrl.getVariableTotal();
+    const combinedTotal = ItemCtrl.getCombinedTotal();
+    // Add total to UI
+    UICtrl.showVariableTotal(variableTotal);
+    // Add total to combined total
+    UICtrl.showCombinedTotal(combinedTotal);
+
+    UICtrl.clearVariableEditState();
+
+    e.preventDefault();
+  };
+
+  // Reset entire form event
+  const resetForm = function() {
+    let check = confirm('Are you sure you want to reset the entire form?');
+    if (check === true) {
+      // Delete all items from the data structure
+      ItemCtrl.clearAllItems();
+
+      // Get fixed total
+      const fixedTotal = ItemCtrl.getFixedTotal();
+      // Add total to UI
+      UICtrl.showFixedTotal(fixedTotal);
+
+      // Get variable total
+      const variableTotal = ItemCtrl.getVariableTotal();
+      // Add total to UI
+      UICtrl.showVariableTotal(variableTotal);
+
+      // Add total to combined total
+      const combinedTotal = ItemCtrl.getCombinedTotal();
+      UICtrl.showCombinedTotal(combinedTotal);
+
+      // Remove from UI
+      UICtrl.resetUI();
+    }
   };
 
   // Public Methods
