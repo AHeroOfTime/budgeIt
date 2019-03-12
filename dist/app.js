@@ -42,6 +42,15 @@ const StorageCtrl = (function() {
         localStorage.setItem('variableItems', JSON.stringify(variableItems));
       }
     },
+    storeIncome: function(income) {
+      let incomeStorage;
+      // Check ls for items
+      if (localStorage.getItem('incomeStorage') === null) {
+        incomeStorage = income;
+        // Set ls
+        localStorage.setItem('incomeStorage', incomeStorage);
+      }
+    },
     getFixedStorage: function() {
       let fixedItems;
       if (localStorage.getItem('fixedItems') === null) {
@@ -59,6 +68,15 @@ const StorageCtrl = (function() {
         variableItems = JSON.parse(localStorage.getItem('variableItems'));
       }
       return variableItems;
+    },
+    getIncomeStorage: function() {
+      let incomeStorage;
+      if (localStorage.getItem('incomeStorage') === null) {
+        incomeStorage = '0';
+      } else {
+        incomeStorage = localStorage.getItem('incomeStorage');
+      }
+      return incomeStorage;
     },
     updateFixedStorage: function(updatedItem) {
       let fixedItems = JSON.parse(localStorage.getItem('fixedItems'));
@@ -107,6 +125,7 @@ const StorageCtrl = (function() {
     clearAllStorage: function() {
       localStorage.removeItem('fixedItems');
       localStorage.removeItem('variableItems');
+      localStorage.removeItem('incomeStorage');
     },
   };
 })();
@@ -133,7 +152,7 @@ const ItemCtrl = (function() {
   };
 
   const incomeData = {
-    income: 0,
+    income: StorageCtrl.getIncomeStorage(),
   };
 
   // Public methods
@@ -382,6 +401,11 @@ const UICtrl = (function() {
 
       // Insert list items into DOM
       document.querySelector(UISelectors.variableList).innerHTML = html;
+    },
+    populateIncome: function() {
+      let html = StorageCtrl.getIncomeStorage();
+
+      document.querySelector(UISelectors.incomeTotal).innerHTML = html;
     },
     getFixedInput: function() {
       return {
@@ -723,7 +747,12 @@ const App = (function(ItemCtrl, StorageCtrl, UICtrl) {
 
     // Check if input is empty
     if (input !== '') {
-      document.querySelector(UISelectors.incomeTotal).textContent = input;
+      const income = (document.querySelector(
+        UISelectors.incomeTotal,
+      ).textContent = input);
+
+      // Store in ls
+      StorageCtrl.storeIncome(income);
     }
 
     // Clear input field
@@ -933,6 +962,7 @@ const App = (function(ItemCtrl, StorageCtrl, UICtrl) {
       // Populate list with items
       UICtrl.populateFixedList(fixedItems);
       UICtrl.populateVariableList(variableItems);
+      UICtrl.populateIncome();
 
       // Get fixed total
       const fixedTotal = ItemCtrl.getFixedTotal();
