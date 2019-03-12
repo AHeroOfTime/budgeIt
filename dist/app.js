@@ -42,14 +42,12 @@ const StorageCtrl = (function() {
         localStorage.setItem('variableItems', JSON.stringify(variableItems));
       }
     },
-    storeIncome: function(income) {
+    storeIncome: function(input) {
       let incomeStorage;
-      // Check ls for items
-      if (localStorage.getItem('incomeStorage') === null) {
-        incomeStorage = income;
-        // Set ls
-        localStorage.setItem('incomeStorage', incomeStorage);
-      }
+
+      incomeStorage = input;
+      // Set ls
+      localStorage.setItem('incomeStorage', incomeStorage);
     },
     getFixedStorage: function() {
       let fixedItems;
@@ -747,12 +745,10 @@ const App = (function(ItemCtrl, StorageCtrl, UICtrl) {
 
     // Check if input is empty
     if (input !== '') {
-      const income = (document.querySelector(
-        UISelectors.incomeTotal,
-      ).textContent = input);
+      document.querySelector(UISelectors.incomeTotal).textContent = input;
 
       // Store in ls
-      StorageCtrl.storeIncome(income);
+      StorageCtrl.storeIncome(input);
     }
 
     // Clear input field
