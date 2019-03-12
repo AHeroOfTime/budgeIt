@@ -1,4 +1,115 @@
 // Storage Controller -----------------------------------------------------
+const StorageCtrl = (function() {
+  // Public methods
+  return {
+    storeFixedItem: function(item) {
+      let fixedItems;
+      // Check ls for items
+      if (localStorage.getItem('fixedItems') === null) {
+        fixedItems = [];
+        // Push new item
+        fixedItems.push(item);
+        // Set ls
+        localStorage.setItem('fixedItems', JSON.stringify(fixedItems));
+      } else {
+        // Get items from ls
+        fixedItems = JSON.parse(localStorage.getItem('fixedItems'));
+
+        // Push new item
+        fixedItems.push(item);
+
+        // Re-set ls
+        localStorage.setItem('fixedItems', JSON.stringify(fixedItems));
+      }
+    },
+    storeVariableItem: function(item) {
+      let variableItems;
+      // Check ls for items
+      if (localStorage.getItem('variableItems') === null) {
+        variableItems = [];
+        // Push new item
+        variableItems.push(item);
+        // Set ls
+        localStorage.setItem('variableItems', JSON.stringify(variableItems));
+      } else {
+        // Get items from ls
+        variableItems = JSON.parse(localStorage.getItem('variableItems'));
+
+        // Push new item
+        variableItems.push(item);
+
+        // Re-set ls
+        localStorage.setItem('variableItems', JSON.stringify(variableItems));
+      }
+    },
+    getFixedStorage: function() {
+      let fixedItems;
+      if (localStorage.getItem('fixedItems') === null) {
+        fixedItems = [];
+      } else {
+        fixedItems = JSON.parse(localStorage.getItem('fixedItems'));
+      }
+      return fixedItems;
+    },
+    getVariableStorage: function() {
+      let variableItems;
+      if (localStorage.getItem('variableItems') === null) {
+        variableItems = [];
+      } else {
+        variableItems = JSON.parse(localStorage.getItem('variableItems'));
+      }
+      return variableItems;
+    },
+    updateFixedStorage: function(updatedItem) {
+      let fixedItems = JSON.parse(localStorage.getItem('fixedItems'));
+
+      fixedItems.forEach(function(item, index) {
+        if (updatedItem.id === item.id) {
+          fixedItems.splice(index, 1, updatedItem);
+        }
+      });
+      // Re-set ls
+      localStorage.setItem('fixedItems', JSON.stringify(fixedItems));
+    },
+    updateVariableStorage: function(updatedItem) {
+      let variableItems = JSON.parse(localStorage.getItem('variableItems'));
+
+      variableItems.forEach(function(item, index) {
+        if (updatedItem.id === item.id) {
+          variableItems.splice(index, 1, updatedItem);
+        }
+      });
+      // Re-set ls
+      localStorage.setItem('variableItems', JSON.stringify(variableItems));
+    },
+    deleteFixedItemFromStorage: function(id) {
+      let fixedItems = JSON.parse(localStorage.getItem('fixedItems'));
+
+      fixedItems.forEach(function(item, index) {
+        if (id === item.id) {
+          fixedItems.splice(index, 1);
+        }
+      });
+      // Re-set ls
+      localStorage.setItem('fixedItems', JSON.stringify(fixedItems));
+    },
+    deleteVariableItemFromStorage: function(id) {
+      let variableItems = JSON.parse(localStorage.getItem('variableItems'));
+
+      variableItems.forEach(function(item, index) {
+        if (id === item.id) {
+          variableItems.splice(index, 1);
+        }
+      });
+      // Re-set ls
+      localStorage.setItem('variableItems', JSON.stringify(variableItems));
+    },
+    clearAllStorage: function() {
+      localStorage.removeItem('fixedItems');
+      localStorage.removeItem('variableItems');
+    },
+  };
+})();
 
 // Item Controller --------------------------------------------------------
 const ItemCtrl = (function() {
@@ -10,23 +121,13 @@ const ItemCtrl = (function() {
   };
   // Data Structure / State
   const fixedData = {
-    items: [
-      // Test data
-      // { id: 0, title: 'Car Payment', amount: 300 },
-      // { id: 1, title: 'Insurance', amount: 75 },
-      // { id: 2, title: 'Rent', amount: 800 },
-    ],
+    items: StorageCtrl.getFixedStorage(),
     currentItem: null,
     fixedAmount: 0,
   };
 
   const variableData = {
-    items: [
-      // Test data
-      // { id: 0, title: 'Netflix', amount: 12 },
-      // { id: 1, title: 'Twitch', amount: 5 },
-      // { id: 2, title: 'Food', amount: 150 },
-    ],
+    items: StorageCtrl.getVariableStorage(),
     currentItem: null,
     variableAmount: 0,
   };
@@ -478,7 +579,7 @@ const UICtrl = (function() {
 })();
 
 // App Controller ---------------------------------------------------------
-const App = (function(ItemCtrl, UICtrl) {
+const App = (function(ItemCtrl, StorageCtrl, UICtrl) {
   // Load event listeners
   const loadEventListeners = function() {
     // Get UI selectors
@@ -569,6 +670,9 @@ const App = (function(ItemCtrl, UICtrl) {
       // Add total to combined total
       UICtrl.showCombinedTotal(combinedTotal);
 
+      // Store in ls
+      StorageCtrl.storeFixedItem(newItem);
+
       // Clear fields
       UICtrl.clearFixedInput();
     }
@@ -599,6 +703,9 @@ const App = (function(ItemCtrl, UICtrl) {
       UICtrl.showVariableTotal(variableTotal);
       // Add total to combined total
       UICtrl.showCombinedTotal(combinedTotal);
+
+      // Store in ls
+      StorageCtrl.storeVariableItem(newItem);
 
       // Clear fields
       UICtrl.clearVariableInput();
@@ -694,6 +801,9 @@ const App = (function(ItemCtrl, UICtrl) {
     // Add total to combined total
     UICtrl.showCombinedTotal(combinedTotal);
 
+    // Update in ls
+    StorageCtrl.updateFixedStorage(updatedItem);
+
     UICtrl.clearFixedEditState();
 
     e.preventDefault();
@@ -717,6 +827,9 @@ const App = (function(ItemCtrl, UICtrl) {
     UICtrl.showVariableTotal(variableTotal);
     // Add total to combined total
     UICtrl.showCombinedTotal(combinedTotal);
+
+    // Update in ls
+    StorageCtrl.updateVariableStorage(updatedItem);
 
     UICtrl.clearVariableEditState();
 
@@ -742,6 +855,9 @@ const App = (function(ItemCtrl, UICtrl) {
     // Add total to combined total
     UICtrl.showCombinedTotal(combinedTotal);
 
+    // Delete from ls
+    StorageCtrl.deleteFixedItemFromStorage(currentItem.id);
+
     UICtrl.clearFixedEditState();
 
     e.preventDefault();
@@ -765,6 +881,9 @@ const App = (function(ItemCtrl, UICtrl) {
     UICtrl.showVariableTotal(variableTotal);
     // Add total to combined total
     UICtrl.showCombinedTotal(combinedTotal);
+
+    // Delete from ls
+    StorageCtrl.deleteVariableItemFromStorage(currentItem.id);
 
     UICtrl.clearVariableEditState();
 
@@ -794,6 +913,9 @@ const App = (function(ItemCtrl, UICtrl) {
 
       // Remove from UI
       UICtrl.resetUI();
+
+      // Delete from ls
+      StorageCtrl.clearAllStorage();
     }
   };
 
@@ -828,7 +950,7 @@ const App = (function(ItemCtrl, UICtrl) {
       loadEventListeners();
     },
   };
-})(ItemCtrl, UICtrl);
+})(ItemCtrl, StorageCtrl, UICtrl);
 
 // Initialize App
 App.init();
