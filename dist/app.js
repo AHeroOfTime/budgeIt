@@ -70,7 +70,7 @@ const StorageCtrl = (function() {
     getIncomeStorage: function() {
       let incomeStorage;
       if (localStorage.getItem('incomeStorage') === null) {
-        incomeStorage = '0';
+        incomeStorage = '0.00';
       } else {
         incomeStorage = localStorage.getItem('incomeStorage');
       }
@@ -140,13 +140,13 @@ const ItemCtrl = (function() {
   const fixedData = {
     items: StorageCtrl.getFixedStorage(),
     currentItem: null,
-    fixedAmount: 0,
+    fixedAmount: 0.0,
   };
 
   const variableData = {
     items: StorageCtrl.getVariableStorage(),
     currentItem: null,
-    variableAmount: 0,
+    variableAmount: 0.0,
   };
 
   const incomeData = {
@@ -168,6 +168,7 @@ const ItemCtrl = (function() {
       }
 
       // To number? - Not necessary
+      amount = parseFloat(amount).toFixed(2);
       amount = parseFloat(amount);
 
       // Create new item
@@ -179,7 +180,7 @@ const ItemCtrl = (function() {
       return newItem;
     },
     getFixedTotal: function() {
-      let total = 0;
+      let total = 0.0;
 
       // Loop and add
       fixedData.items.forEach(function(item) {
@@ -205,7 +206,8 @@ const ItemCtrl = (function() {
       }
 
       // To number? - Not necessary
-      amount = parseInt(amount);
+      amount = parseFloat(amount).toFixed(2);
+      amount = parseFloat(amount);
 
       // Create new item
       newItem = new Item(id, title, amount);
@@ -236,7 +238,7 @@ const ItemCtrl = (function() {
 
       total = fixed + variable;
 
-      return total;
+      return parseFloat(total).toFixed(2);
     },
     getFixedItemById: function(id) {
       let found = null;
@@ -591,8 +593,9 @@ const UICtrl = (function() {
         item.remove();
       });
 
-      document.querySelector(UISelectors.incomeTotal).textContent = 0;
-      UICtrl.clearIncomeInput();
+      UICtrl.clearFixedEditState();
+      UICtrl.clearVariableEditState();
+      UICtrl.populateIncome();
     },
     getSelectors: function() {
       return UISelectors;
@@ -677,7 +680,7 @@ const App = (function(ItemCtrl, StorageCtrl, UICtrl) {
     const input = UICtrl.getFixedInput();
 
     // Check if input fields are empty
-    if (input.title !== '' && input.amount !== '') {
+    if (input.title !== '' && input.amount !== '' && input.amount > 0) {
       // Add fixed amount
       const newFixedAmount = ItemCtrl.addFixedAmount(input.title, input.amount);
 
@@ -708,7 +711,7 @@ const App = (function(ItemCtrl, StorageCtrl, UICtrl) {
     const input = UICtrl.getVariableInput();
 
     // Check if input fields are empty
-    if (input.title !== '' && input.amount !== '') {
+    if (input.title !== '' && input.amount !== '' && input.amount > 0) {
       // Add variable amount
       const newVariableAmount = ItemCtrl.addVariableAmount(
         input.title,
@@ -741,18 +744,17 @@ const App = (function(ItemCtrl, StorageCtrl, UICtrl) {
     // Get UI selectors
     const UISelectors = UICtrl.getSelectors();
     // Get income input
-    const input = UICtrl.getIncomeInput();
-
+    let input = UICtrl.getIncomeInput();
     // Check if input is empty
-    if (input !== '') {
+    if (input !== '' && input > 0) {
+      input = parseFloat(input).toFixed(2);
       document.querySelector(UISelectors.incomeTotal).textContent = input;
 
       // Store in ls
       StorageCtrl.storeIncome(input);
+      // Clear input field
+      UICtrl.clearIncomeInput();
     }
-
-    // Clear input field
-    UICtrl.clearIncomeInput();
 
     e.preventDefault();
   };
@@ -936,11 +938,11 @@ const App = (function(ItemCtrl, StorageCtrl, UICtrl) {
       const combinedTotal = ItemCtrl.getCombinedTotal();
       UICtrl.showCombinedTotal(combinedTotal);
 
-      // Remove from UI
-      UICtrl.resetUI();
-
       // Delete from ls
       StorageCtrl.clearAllStorage();
+
+      // Remove from UI
+      UICtrl.resetUI();
     }
   };
 
