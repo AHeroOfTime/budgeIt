@@ -187,6 +187,9 @@ const ItemCtrl = (function() {
         total += item.amount;
       });
 
+      total = parseFloat(total).toFixed(2);
+      total = parseFloat(total);
+
       // Set total in data structure
       fixedData.fixedAmount = total;
 
@@ -218,12 +221,15 @@ const ItemCtrl = (function() {
       return newItem;
     },
     getVariableTotal: function() {
-      let total = 0;
+      let total = 0.0;
 
       // Loop and add
       variableData.items.forEach(function(item) {
         total += item.amount;
       });
+
+      total = parseFloat(total).toFixed(2);
+      total = parseFloat(total);
 
       // Set total in data structure
       variableData.variableAmount = total;
@@ -239,6 +245,14 @@ const ItemCtrl = (function() {
       total = fixed + variable;
 
       return parseFloat(total).toFixed(2);
+    },
+    getDisposableIncome: function() {
+      const income = StorageCtrl.getIncomeStorage();
+      const spending = ItemCtrl.getCombinedTotal();
+
+      const disposable = parseFloat(income - spending).toFixed(2);
+
+      return disposable;
     },
     getFixedItemById: function(id) {
       let found = null;
@@ -272,10 +286,8 @@ const ItemCtrl = (function() {
     getCurrentVariableItem: function() {
       return variableData.currentItem;
     },
-    getIncome: function() {
-      return incomeData.income;
-    },
     updateFixedItem: function(title, amount) {
+      amount = parseFloat(amount).toFixed(2);
       amount = parseFloat(amount);
 
       let found = null;
@@ -366,6 +378,7 @@ const UICtrl = (function() {
     incomeInput: '#income',
     incomeTotal: '.monthly-income',
     resetBtn: '.reset-btn',
+    disposable: '.disposable',
   };
 
   // Public Methods
@@ -479,6 +492,22 @@ const UICtrl = (function() {
     },
     showCombinedTotal: function(total) {
       document.querySelector(UISelectors.combinedTotal).textContent = total;
+    },
+    showDisposableIncome: function(value) {
+      if (value >= 0) {
+        document
+          .querySelector(UISelectors.disposable)
+          .classList.remove('text-danger');
+        document
+          .querySelector(UISelectors.disposable)
+          .classList.add('text-success');
+        document.querySelector(UISelectors.disposable).textContent = value;
+      } else {
+        document
+          .querySelector(UISelectors.disposable)
+          .classList.add('text-danger');
+        document.querySelector(UISelectors.disposable).textContent = value;
+      }
     },
     addFixedItemToForm: function() {
       document.querySelector(
@@ -690,10 +719,13 @@ const App = (function(ItemCtrl, StorageCtrl, UICtrl) {
       // Get fixed total
       const fixedTotal = ItemCtrl.getFixedTotal();
       const combinedTotal = ItemCtrl.getCombinedTotal();
+      const disposable = ItemCtrl.getDisposableIncome();
       // Add total to UI
       UICtrl.showFixedTotal(fixedTotal);
       // Add total to combined total
       UICtrl.showCombinedTotal(combinedTotal);
+      // Eval disposable
+      UICtrl.showDisposableIncome(disposable);
 
       // Store in ls
       StorageCtrl.storeFixedItem(newItem);
@@ -724,10 +756,13 @@ const App = (function(ItemCtrl, StorageCtrl, UICtrl) {
       // Get variable total
       const variableTotal = ItemCtrl.getVariableTotal();
       const combinedTotal = ItemCtrl.getCombinedTotal();
+      const disposable = ItemCtrl.getDisposableIncome();
       // Add total to UI
       UICtrl.showVariableTotal(variableTotal);
       // Add total to combined total
       UICtrl.showCombinedTotal(combinedTotal);
+      // Show disposable
+      UICtrl.showDisposableIncome(disposable);
 
       // Store in ls
       StorageCtrl.storeVariableItem(newItem);
@@ -749,9 +784,13 @@ const App = (function(ItemCtrl, StorageCtrl, UICtrl) {
     if (input !== '' && input > 0) {
       input = parseFloat(input).toFixed(2);
       document.querySelector(UISelectors.incomeTotal).textContent = input;
-
       // Store in ls
       StorageCtrl.storeIncome(input);
+
+      const disposable = ItemCtrl.getDisposableIncome();
+      console.log(disposable);
+      UICtrl.showDisposableIncome(disposable);
+
       // Clear input field
       UICtrl.clearIncomeInput();
     }
@@ -814,24 +853,29 @@ const App = (function(ItemCtrl, StorageCtrl, UICtrl) {
     // Get item input
     const input = UICtrl.getFixedInput();
 
-    // Update item
-    const updatedItem = ItemCtrl.updateFixedItem(input.title, input.amount);
+    if (input.title !== '' && input.amount !== '' && input.amount > 0) {
+      // Update item
+      const updatedItem = ItemCtrl.updateFixedItem(input.title, input.amount);
 
-    // Update UI
-    UICtrl.updateFixedUI(updatedItem);
+      // Update UI
+      UICtrl.updateFixedUI(updatedItem);
 
-    // Get fixed total
-    const fixedTotal = ItemCtrl.getFixedTotal();
-    const combinedTotal = ItemCtrl.getCombinedTotal();
-    // Add total to UI
-    UICtrl.showFixedTotal(fixedTotal);
-    // Add total to combined total
-    UICtrl.showCombinedTotal(combinedTotal);
+      // Get fixed total
+      const fixedTotal = ItemCtrl.getFixedTotal();
+      const combinedTotal = ItemCtrl.getCombinedTotal();
+      const disposable = ItemCtrl.getDisposableIncome();
+      // Add total to UI
+      UICtrl.showFixedTotal(fixedTotal);
+      // Add total to combined total
+      UICtrl.showCombinedTotal(combinedTotal);
+      // Show disposable
+      UICtrl.showDisposableIncome(disposable);
 
-    // Update in ls
-    StorageCtrl.updateFixedStorage(updatedItem);
+      // Update in ls
+      StorageCtrl.updateFixedStorage(updatedItem);
 
-    UICtrl.clearFixedEditState();
+      UICtrl.clearFixedEditState();
+    }
 
     e.preventDefault();
   };
@@ -841,24 +885,32 @@ const App = (function(ItemCtrl, StorageCtrl, UICtrl) {
     // Get item input
     const input = UICtrl.getVariableInput();
 
-    // Update item
-    const updatedItem = ItemCtrl.updateVariableItem(input.title, input.amount);
+    if (input.title !== '' && input.amount !== '' && input.amount > 0) {
+      // Update item
+      const updatedItem = ItemCtrl.updateVariableItem(
+        input.title,
+        input.amount,
+      );
 
-    // Update UI
-    UICtrl.updateVariableUI(updatedItem);
+      // Update UI
+      UICtrl.updateVariableUI(updatedItem);
 
-    // Get variable total
-    const variableTotal = ItemCtrl.getVariableTotal();
-    const combinedTotal = ItemCtrl.getCombinedTotal();
-    // Add total to UI
-    UICtrl.showVariableTotal(variableTotal);
-    // Add total to combined total
-    UICtrl.showCombinedTotal(combinedTotal);
+      // Get variable total
+      const variableTotal = ItemCtrl.getVariableTotal();
+      const combinedTotal = ItemCtrl.getCombinedTotal();
+      const disposable = ItemCtrl.getDisposableIncome();
+      // Add total to UI
+      UICtrl.showVariableTotal(variableTotal);
+      // Add total to combined total
+      UICtrl.showCombinedTotal(combinedTotal);
+      // Show disposable
+      UICtrl.showDisposableIncome(disposable);
 
-    // Update in ls
-    StorageCtrl.updateVariableStorage(updatedItem);
+      // Update in ls
+      StorageCtrl.updateVariableStorage(updatedItem);
 
-    UICtrl.clearVariableEditState();
+      UICtrl.clearVariableEditState();
+    }
 
     e.preventDefault();
   };
@@ -877,10 +929,13 @@ const App = (function(ItemCtrl, StorageCtrl, UICtrl) {
     // Get fixed total
     const fixedTotal = ItemCtrl.getFixedTotal();
     const combinedTotal = ItemCtrl.getCombinedTotal();
+    const disposable = ItemCtrl.getDisposableIncome();
     // Add total to UI
     UICtrl.showFixedTotal(fixedTotal);
     // Add total to combined total
     UICtrl.showCombinedTotal(combinedTotal);
+    // Show disposable
+    UICtrl.showDisposableIncome(disposable);
 
     // Delete from ls
     StorageCtrl.deleteFixedItemFromStorage(currentItem.id);
@@ -904,10 +959,13 @@ const App = (function(ItemCtrl, StorageCtrl, UICtrl) {
     // Get variable total
     const variableTotal = ItemCtrl.getVariableTotal();
     const combinedTotal = ItemCtrl.getCombinedTotal();
+    const disposable = ItemCtrl.getDisposableIncome();
     // Add total to UI
     UICtrl.showVariableTotal(variableTotal);
     // Add total to combined total
     UICtrl.showCombinedTotal(combinedTotal);
+    // Show Disposable
+    UICtrl.showDisposableIncome(disposable);
 
     // Delete from ls
     StorageCtrl.deleteVariableItemFromStorage(currentItem.id);
@@ -943,6 +1001,8 @@ const App = (function(ItemCtrl, StorageCtrl, UICtrl) {
 
       // Remove from UI
       UICtrl.resetUI();
+      const disposable = ItemCtrl.getDisposableIncome();
+      UICtrl.showDisposableIncome(disposable);
     }
   };
 
@@ -973,6 +1033,9 @@ const App = (function(ItemCtrl, StorageCtrl, UICtrl) {
       // Add total to combined total
       const combinedTotal = ItemCtrl.getCombinedTotal();
       UICtrl.showCombinedTotal(combinedTotal);
+      // Get disposable income
+      const disposable = ItemCtrl.getDisposableIncome();
+      UICtrl.showDisposableIncome(disposable);
 
       // Load event listeners
       loadEventListeners();

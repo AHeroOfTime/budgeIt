@@ -204,15 +204,23 @@
     <!-- Total -->
     <nav class="navbar navbar-dark bg-dark fixed-bottom">
       <div class="container">
-        <ul class="navbar-nav">
+        <ul class="navbar-nav inline-block w-100">
           <li class="navbar-item">
-            <h5 class="text-white">
-              Monthly Income : $<span class="monthly-income">0</span>
+            <h5 class="text-white d-flex">
+              Monthly Income : <span class="ml-auto">$</span
+              ><span class="monthly-income float-right">0</span>
             </h5>
           </li>
           <li class="navbar-item">
-            <h5 class="text-white">
-              Total Spending : $<span class="combined-total">0</span>
+            <h5 class="text-white d-flex">
+              Total Spending : <span class="ml-auto">$</span
+              ><span class="combined-total float-right">0</span>
+            </h5>
+          </li>
+          <li class="navbar-item">
+            <h5 class="text-white d-flex">
+              Disposable Income : <span class="ml-auto">$</span>
+              <span class="disposable float-right">0</span>
             </h5>
           </li>
         </ul>
