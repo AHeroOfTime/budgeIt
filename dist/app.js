@@ -788,7 +788,6 @@ const App = (function(ItemCtrl, StorageCtrl, UICtrl) {
       StorageCtrl.storeIncome(input);
 
       const disposable = ItemCtrl.getDisposableIncome();
-      console.log(disposable);
       UICtrl.showDisposableIncome(disposable);
 
       // Clear input field
